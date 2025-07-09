@@ -9,8 +9,9 @@ import { Loader2, Sparkles, Copy, Download, RefreshCw, LogOut } from "lucide-rea
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { generateFiche } from '@/lib/generate_fiche';
 
-interface ProductSheet {
+export interface ProductSheet {
   title: string;
   description: string;
   features: string[];
@@ -51,31 +52,8 @@ export const ProductSheetGenerator = () => {
     
     // Simulation de génération IA (à remplacer par l'API réelle)
     setTimeout(async () => {
-      const mockSheet: ProductSheet = {
-        title: `${formData.productName} - Premium Edition`,
-        description: `Découvrez notre ${formData.productName} conçu spécialement pour ${formData.targetAudience || 'tous les utilisateurs'}. Un produit innovant qui combine qualité, performance et design moderne pour répondre à tous vos besoins.`,
-        features: [
-          "Matériaux de haute qualité",
-          "Design ergonomique et moderne",
-          "Compatible avec tous les appareils",
-          "Garantie 2 ans incluse",
-          "Livraison gratuite"
-        ],
-        benefits: [
-          "Améliore votre productivité au quotidien",
-          "Économise du temps et de l'énergie",
-          "Design élégant qui s'adapte à tous les environnements",
-          "Investissement durable et rentable"
-        ],
-        priceSuggestion: "49,99€ - 79,99€",
-        seoTags: ["premium", "qualité", "innovation", "moderne", "efficace"],
-        category: "Électronique & Accessoires",
-        cta: "Commandez maintenant - Livraison gratuite",
-        translations: {
-          fr: "Version française",
-          en: "English version"
-        }
-      };
+      const inputPrompt = `${formData.productName}${formData.description ? `: ${formData.description}` : ""}${formData.targetAudience ? ` (Target public: ${formData.targetAudience})` : ""} [Language: ${formData.language}]`;
+      const mockSheet: ProductSheet = await generateFiche(inputPrompt);
       
       // Sauvegarder dans Supabase
       if (user) {
@@ -169,8 +147,7 @@ export const ProductSheetGenerator = () => {
         <div className="text-center mb-12">
           <div className="flex justify-between items-center mb-4">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-4xl font-bold">
-              <Sparkles className="h-8 w-8 text-blue-600" />
-              ProSheet Wizard
+              QwickFiche
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
@@ -198,7 +175,6 @@ export const ProductSheetGenerator = () => {
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
                 Créer une fiche produit
               </CardTitle>
               <CardDescription className="text-blue-100">
@@ -323,7 +299,7 @@ export const ProductSheetGenerator = () => {
                 <div className="space-y-6">
                   {/* Title */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">📝 Titre optimisé SEO</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Titre optimisé SEO</h3>
                     <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{productSheet.title}</p>
                   </div>
 
@@ -335,7 +311,7 @@ export const ProductSheetGenerator = () => {
 
                   {/* Features */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">⚙️ Caractéristiques</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Caractéristiques</h3>
                     <ul className="space-y-1 bg-gray-50 p-3 rounded-lg">
                       {productSheet.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2 text-gray-700">
@@ -348,7 +324,7 @@ export const ProductSheetGenerator = () => {
 
                   {/* Benefits */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">✨ Avantages</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Avantages</h3>
                     <ul className="space-y-1 bg-gray-50 p-3 rounded-lg">
                       {productSheet.benefits.map((benefit, index) => (
                         <li key={index} className="flex items-center gap-2 text-gray-700">
@@ -362,7 +338,7 @@ export const ProductSheetGenerator = () => {
                   {/* Price & Category */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h3 className="font-semibold text-lg mb-2 text-gray-800">💰 Prix suggéré</h3>
+                      <h3 className="font-semibold text-lg mb-2 text-gray-800">Prix suggéré</h3>
                       <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{productSheet.priceSuggestion}</p>
                     </div>
                     <div>
@@ -373,7 +349,7 @@ export const ProductSheetGenerator = () => {
 
                   {/* SEO Tags */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">🏷️ Tags SEO</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Tags SEO</h3>
                     <div className="flex flex-wrap gap-2">
                       {productSheet.seoTags.map((tag, index) => (
                         <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -385,7 +361,7 @@ export const ProductSheetGenerator = () => {
 
                   {/* CTA */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">🎯 Call-to-Action</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Call-to-Action</h3>
                     <p className="text-gray-700 bg-gradient-to-r from-orange-100 to-red-100 p-3 rounded-lg font-medium">
                       {productSheet.cta}
                     </p>
@@ -398,7 +374,7 @@ export const ProductSheetGenerator = () => {
 
         {/* Footer */}
         <div className="text-center mt-12 text-gray-500">
-          <p>💡 Propulsé par l'IA - Générez des fiches produits professionnelles en quelques clics</p>
+          <p>Propulsé par l'IA - Générez des fiches produits professionnelles en quelques clics</p>
         </div>
       </div>
     </div>
