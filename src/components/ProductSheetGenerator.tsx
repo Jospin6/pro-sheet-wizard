@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { generateFiche } from '@/lib/generate_fiche';
+import { DownLoadPdf } from '@/lib/downloadPdf';
+import ProductPDF from './ficheDoc';
 
 export interface ProductSheet {
   title: string;
@@ -20,7 +22,7 @@ export interface ProductSheet {
   seoTags: string[];
   category: string;
   cta: string;
-  translations: {
+  translations?: {
     fr: any;
     en: any;
   };
@@ -41,20 +43,20 @@ export const ProductSheetGenerator = () => {
   const handleGenerate = async () => {
     if (!formData.productName.trim()) {
       toast({
-        title: "Erreur",
-        description: "Veuillez saisir le nom du produit",
+        title: "Error",
+        description: "Please enter the product name",
         variant: "destructive"
       });
       return;
     }
 
     setIsGenerating(true);
-    
+
     // Simulation de génération IA (à remplacer par l'API réelle)
     setTimeout(async () => {
       const inputPrompt = `${formData.productName}${formData.description ? `: ${formData.description}` : ""}${formData.targetAudience ? ` (Target public: ${formData.targetAudience})` : ""} [Language: ${formData.language}]`;
       const mockSheet: ProductSheet = await generateFiche(inputPrompt);
-      
+
       // Sauvegarder dans Supabase
       if (user) {
         try {
@@ -77,8 +79,8 @@ export const ProductSheetGenerator = () => {
           if (error) {
             console.error('Erreur lors de la sauvegarde:', error);
             toast({
-              title: "Erreur de sauvegarde",
-              description: "La fiche a été générée mais n'a pas pu être sauvegardée",
+              title: "Save error",
+              description: "The product sheet was generated but could not be saved",
               variant: "destructive"
             });
           }
@@ -86,13 +88,13 @@ export const ProductSheetGenerator = () => {
           console.error('Erreur lors de la sauvegarde:', error);
         }
       }
-      
+
       setProductSheet(mockSheet);
       setIsGenerating(false);
-      
+
       toast({
-        title: "Fiche produit générée !",
-        description: "Votre fiche produit a été créée avec succès",
+        title: "Product sheet generated!",
+        description: "Your product sheet has been successfully created",
       });
     }, 2000);
   };
@@ -101,13 +103,13 @@ export const ProductSheetGenerator = () => {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: "Copié !",
-        description: "Le contenu a été copié dans le presse-papiers",
+        title: "Copied !",
+        description: "Content has been copied to the clipboard",
       });
     } catch (err) {
       toast({
-        title: "Erreur",
-        description: "Impossible de copier le contenu",
+        title: "Error",
+        description: "Unable to copy content",
         variant: "destructive"
       });
     }
@@ -115,28 +117,35 @@ export const ProductSheetGenerator = () => {
 
   const exportAsJSON = () => {
     if (!productSheet) return;
-    
+
     const dataStr = JSON.stringify(productSheet, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
     const exportFileDefaultName = `fiche-produit-${Date.now()}.json`;
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
-    
+
     toast({
-      title: "Export réussi !",
-      description: "La fiche produit a été exportée en JSON",
+      title: "Export successful!",
+      description: "The product sheet has been exported as JSON",
+    });
+  };
+
+  const onClickDownload = (data: ProductSheet) => {
+    DownLoadPdf({
+      pdfElement: <ProductPDF data={data} />,
+      filename: `product_sheet.pdf`,
     });
   };
 
   const handleSignOut = async () => {
     await signOut();
     toast({
-      title: "Déconnecté",
-      description: "Vous avez été déconnecté avec succès",
+      title: "Logout",
+      description: "You have been successfully logged out",
     });
   };
 
@@ -151,59 +160,59 @@ export const ProductSheetGenerator = () => {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
-                Bienvenue, {user?.email}
+                Wellcome, {user?.email}
               </span>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleSignOut}
                 className="gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                Déconnexion
+                Logout
               </Button>
             </div>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Générez des fiches produits professionnelles en quelques secondes grâce à l'intelligence artificielle
+            Generate professional product sheets in seconds using artificial intelligence.
           </p>
         </div>
 
-        
+
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Form */}
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-2">
-                Créer une fiche produit
+                Create a product sheet
               </CardTitle>
               <CardDescription className="text-blue-100">
-                Saisissez les informations de base pour générer votre fiche
+                Enter the basic information to generate your product sheet
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="productName" className="text-sm font-medium">
-                  Nom du produit *
+                  Product name *
                 </Label>
                 <Input
                   id="productName"
-                  placeholder="ex: Chaussures de sport pour femme"
+                  placeholder="e.g., Women's running shoes"
                   value={formData.productName}
-                  onChange={(e) => setFormData({...formData, productName: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
                   className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-sm font-medium">
-                  Description (optionnelle)
+                  Description (Optional)
                 </Label>
                 <Textarea
                   id="description"
-                  placeholder="Brève description du produit..."
+                  placeholder="Brief product description..."
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
                   rows={3}
                 />
@@ -211,22 +220,22 @@ export const ProductSheetGenerator = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="targetAudience" className="text-sm font-medium">
-                  Public cible
+                  Target audience
                 </Label>
                 <Input
                   id="targetAudience"
-                  placeholder="ex: Jeunes actifs, Sportifs, Parents..."
+                  placeholder="e.g., Young professionals, Athletes, Parents..."
                   value={formData.targetAudience}
-                  onChange={(e) => setFormData({...formData, targetAudience: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
                   className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="language" className="text-sm font-medium">
-                  Langue de sortie
+                  Output language
                 </Label>
-                <Select value={formData.language} onValueChange={(value) => setFormData({...formData, language: value})}>
+                <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
                   <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500">
                     <SelectValue />
                   </SelectTrigger>
@@ -238,7 +247,7 @@ export const ProductSheetGenerator = () => {
                 </Select>
               </div>
 
-              <Button 
+              <Button
                 onClick={handleGenerate}
                 disabled={isGenerating}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
@@ -247,12 +256,12 @@ export const ProductSheetGenerator = () => {
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Génération en cours...
+                    Generating...
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Générer la fiche produit
+                    Generate product sheet
                   </>
                 )}
               </Button>
@@ -263,7 +272,7 @@ export const ProductSheetGenerator = () => {
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
               <CardTitle className="flex items-center justify-between">
-                <span>Fiche produit générée</span>
+                <span>Product sheet generated</span>
                 {productSheet && (
                   <div className="flex gap-2">
                     <Button
@@ -280,38 +289,46 @@ export const ProductSheetGenerator = () => {
                       onClick={exportAsJSON}
                       className="text-white hover:bg-white/20"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="h-4 w-4" /> JSON
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onClickDownload(productSheet)}
+                      className="text-white hover:bg-white/20"
+                    >
+                      <Download className="h-4 w-4" /> PDF
                     </Button>
                   </div>
                 )}
               </CardTitle>
               <CardDescription className="text-green-100">
-                {productSheet ? "Résultat de la génération IA" : "Les résultats apparaîtront ici"}
+                {productSheet ? "AI generation result" : "Results will appear here"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               {!productSheet ? (
                 <div className="text-center py-12 text-gray-500">
                   <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>Complétez le formulaire et cliquez sur "Générer" pour voir apparaître votre fiche produit</p>
+                  <p>Fill out the form and click "Generate" to see your product sheet appear</p>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {/* Title */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Titre optimisé SEO</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">SEO-optimized title</h3>
                     <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{productSheet.title}</p>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">📄 Description marketing</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Marketing description</h3>
                     <p className="text-gray-700 bg-gray-50 p-3 rounded-lg leading-relaxed">{productSheet.description}</p>
                   </div>
 
                   {/* Features */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Caractéristiques</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Features</h3>
                     <ul className="space-y-1 bg-gray-50 p-3 rounded-lg">
                       {productSheet.features.map((feature, index) => (
                         <li key={index} className="flex items-center gap-2 text-gray-700">
@@ -324,7 +341,7 @@ export const ProductSheetGenerator = () => {
 
                   {/* Benefits */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Avantages</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Benefits</h3>
                     <ul className="space-y-1 bg-gray-50 p-3 rounded-lg">
                       {productSheet.benefits.map((benefit, index) => (
                         <li key={index} className="flex items-center gap-2 text-gray-700">
@@ -338,18 +355,18 @@ export const ProductSheetGenerator = () => {
                   {/* Price & Category */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h3 className="font-semibold text-lg mb-2 text-gray-800">Prix suggéré</h3>
+                      <h3 className="font-semibold text-lg mb-2 text-gray-800">Suggested price</h3>
                       <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{productSheet.priceSuggestion}</p>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg mb-2 text-gray-800">📁 Catégorie</h3>
+                      <h3 className="font-semibold text-lg mb-2 text-gray-800">Category</h3>
                       <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{productSheet.category}</p>
                     </div>
                   </div>
 
                   {/* SEO Tags */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">Tags SEO</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-800">SEO Tags</h3>
                     <div className="flex flex-wrap gap-2">
                       {productSheet.seoTags.map((tag, index) => (
                         <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -374,7 +391,7 @@ export const ProductSheetGenerator = () => {
 
         {/* Footer */}
         <div className="text-center mt-12 text-gray-500">
-          <p>Propulsé par l'IA - Générez des fiches produits professionnelles en quelques clics</p>
+          <p>Generate professional product sheets in just a few clicks</p>
         </div>
       </div>
     </div>

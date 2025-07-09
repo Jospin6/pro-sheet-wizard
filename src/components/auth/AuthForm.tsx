@@ -25,20 +25,20 @@ export const AuthForm = () => {
       
       if (error) {
         toast({
-          title: "Erreur de connexion",
+          title: "Login error",
           description: error.message,
           variant: "destructive"
         });
       } else {
         toast({
-          title: "Connexion réussie !",
-          description: "Vous êtes maintenant connecté",
+          title: "Login successful !",
+          description: "You are now logged in",
         });
       }
     } catch (error) {
       toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        title: "Error",
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
     } finally {
@@ -55,20 +55,20 @@ export const AuthForm = () => {
       
       if (error) {
         toast({
-          title: "Erreur d'inscription",
+          title: "Signup error",
           description: error.message,
           variant: "destructive"
         });
       } else {
         toast({
-          title: "Inscription réussie !",
-          description: "Vérifiez votre email pour confirmer votre compte",
+          title: "Signup successfully !",
+          description: "Check your email to confirm your account",
         });
       }
     } catch (error) {
       toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
+        title: "Error",
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
     } finally {
@@ -81,17 +81,17 @@ export const AuthForm = () => {
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            ProSheet Wizard
+            QwickFiche
           </CardTitle>
           <CardDescription>
-            Connectez-vous ou créez un compte pour générer vos fiches produits
+            Log in or create an account to generate your product sheets
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Connexion</TabsTrigger>
-              <TabsTrigger value="signup">Inscription</TabsTrigger>
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Signup</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
@@ -103,7 +103,7 @@ export const AuthForm = () => {
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder="your@email.com"
                       value={loginData.email}
                       onChange={(e) => setLoginData({...loginData, email: e.target.value})}
                       className="pl-10"
@@ -113,13 +113,13 @@ export const AuthForm = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Mot de passe</Label>
+                  <Label htmlFor="login-password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="login-password"
                       type="password"
-                      placeholder="Votre mot de passe"
+                      placeholder="Your password"
                       value={loginData.password}
                       onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                       className="pl-10"
@@ -139,7 +139,7 @@ export const AuthForm = () => {
                       Connexion...
                     </>
                   ) : (
-                    "Se connecter"
+                    "Login"
                   )}
                 </Button>
               </form>
@@ -148,13 +148,13 @@ export const AuthForm = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nom complet</Label>
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder="Votre nom complet"
+                      placeholder="Your full name"
                       value={signupData.fullName}
                       onChange={(e) => setSignupData({...signupData, fullName: e.target.value})}
                       className="pl-10"
@@ -169,7 +169,7 @@ export const AuthForm = () => {
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder="your@email.com"
                       value={signupData.email}
                       onChange={(e) => setSignupData({...signupData, email: e.target.value})}
                       className="pl-10"
@@ -179,13 +179,13 @@ export const AuthForm = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Mot de passe</Label>
+                  <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="Minimum 6 caractères"
+                      placeholder="Minimum 6 caracters"
                       value={signupData.password}
                       onChange={(e) => setSignupData({...signupData, password: e.target.value})}
                       className="pl-10"
@@ -203,10 +203,10 @@ export const AuthForm = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Inscription...
+                      Signup...
                     </>
                   ) : (
-                    "Créer un compte"
+                    "Signup"
                   )}
                 </Button>
               </form>
